@@ -54,3 +54,17 @@ const jsonString = `[{
   //     }]
   //   }]
   // }];
+
+  // lets start TDDing
+  const getProducts = () => {
+    return [];
+  }
+  
+  const testDeNorm = () => {
+    console.log(getProducts())
+  }
+  
+  testDeNorm();
+  
+  // output
+  // []
