@@ -55,15 +55,23 @@ const jsonString = `[{
   //   }]
   // }];
 
-  // lets start TDDing
+// lets start TDDing
 const json = JSON.parse(jsonString);
-const getProducts = () => {
-  const productHash: { [key: string]: boolean } = {};
-  json.forEach(({ productId }: any) => {
-    if (!productHash[productId]) {
+
+// promote to hash outside of function
+const productHash: { [key: string]: boolean } = {};
+
+const checkAndAddProductToHash = ({ productId }: any) => {
+  if (!productHash[productId]) {
       productHash[productId] = true;
-    }
+  }
+}
+const calcHash = () => {
+  json.forEach((flat: any) => {
+    checkAndAddProductToHash(flat);
   })
+}
+const getProducts = () => {
   return Object.keys(productHash).map((hashKey) => ({
     productId: hashKey,
   }));
@@ -72,7 +80,7 @@ const getProducts = () => {
 const testDeNorm = () => {
   console.log(getProducts())
 }
-
+calcHash();
 testDeNorm();
 
 // output
