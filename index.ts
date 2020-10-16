@@ -60,6 +60,7 @@ const json = JSON.parse(jsonString);
 
 // promote to hash outside of function
 const productHash: { [key: number]: any } = {};
+const productSizeHash: { [key: number]: { [key: string]: boolean } } = {}; // maybe a better type if there are more size stuff we need
 
 const checkAndAddProductToHash = ({ productId, productName }: any) => {
   if (!productHash[productId]) {
@@ -69,14 +70,32 @@ const checkAndAddProductToHash = ({ productId, productName }: any) => {
       };
   }
 }
+
+const checkAndAddSizeHash = ({ productId, sizeName }: any) => {
+  if (!productSizeHash[productId]) {
+      productSizeHash[productId] = {};
+  }
+  if (!productSizeHash[productId][sizeName]) {
+      productSizeHash[productId][sizeName] = true;
+  }
+}
+
 const calcHash = () => {
   json.forEach((flat: any) => {
     checkAndAddProductToHash(flat);
+    checkAndAddSizeHash(flat);
   })
 }
 
 const getSizesByProductId = (productId: number) => {
-  return [];
+  const sizeHash = productSizeHash[productId];
+  if (!sizeHash) { return []; }
+
+  return Object.keys(sizeHash).map((hashKey) => {
+    return {
+      sizeName: hashKey,
+    }
+  });
 }
 
 const getProductById = (productId: number) => {
@@ -95,11 +114,10 @@ const getProducts = () => {
 }
 
 const testDeNorm = () => {
-  console.log(getProducts())
+  console.log(JSON.stringify(getProducts()))
 }
 calcHash();
 testDeNorm();
 
 // output
-// [ { productId: 1, productName: 'The First Beer', sizes: [] },
-//   { productId: 2, productName: 'Scotchy Scotch Scotch', sizes: [] } ]
+// [{"productId":1,"productName":"The First Beer","sizes":[{"sizeName":"like a little buzzed"},{"sizeName":"like dont drive"}]},{"productId":2,"productName":"Scotchy Scotch Scotch","sizes":[{"sizeName":"decanter"}]}]
