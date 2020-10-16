@@ -60,7 +60,8 @@ const json = JSON.parse(jsonString);
 
 // promote to hash outside of function
 const productHash: { [key: number]: any } = {};
-const productSizeHash: { [key: number]: { [key: string]: boolean } } = {}; // maybe a better type if there are more size stuff we need
+// we could probably break this down into its component indices but we will roll with this for now
+const productSizeHash: { [key: number]: { [key: string]: { [key: number]: number } } } = {};
 
 const checkAndAddProductToHash = ({ productId, productName }: any) => {
   if (!productHash[productId]) {
@@ -76,7 +77,19 @@ const checkAndAddSizeHash = ({ productId, sizeName }: any) => {
       productSizeHash[productId] = {};
   }
   if (!productSizeHash[productId][sizeName]) {
-      productSizeHash[productId][sizeName] = true;
+      productSizeHash[productId][sizeName] = {};
+  }
+}
+
+const checkAndAddStoreHash = ({ productId, sizeName, storeId, storePrice }: any) => {
+  if (!productSizeHash[productId]) {
+      productSizeHash[productId] = {};
+  }
+  if (!productSizeHash[productId][sizeName]) {
+      productSizeHash[productId][sizeName] = {};
+  }
+  if (!productSizeHash[productId][sizeName][storeId]) {
+      productSizeHash[productId][sizeName][storeId] = storePrice;
   }
 }
 
@@ -84,7 +97,23 @@ const calcHash = () => {
   json.forEach((flat: any) => {
     checkAndAddProductToHash(flat);
     checkAndAddSizeHash(flat);
-  })
+    checkAndAddStoreHash(flat);
+  });
+}
+const getStoresByProductSizeIds = (productId: number, sizeName: string) => {
+  const sizeHash = productSizeHash[productId];
+  if (!sizeHash) { return []; }
+  const storeHash = sizeHash[sizeName];
+  if (!storeHash) { return []; }
+
+  return Object.keys(storeHash).map((hashKey) => {
+    // json number but object.keys is always string
+    const intKey = parseInt(hashKey);
+    return {
+      storeId: intKey,
+      storePrice: storeHash[intKey],
+    }
+  });
 }
 
 const getSizesByProductId = (productId: number) => {
@@ -94,6 +123,7 @@ const getSizesByProductId = (productId: number) => {
   return Object.keys(sizeHash).map((hashKey) => {
     return {
       sizeName: hashKey,
+      stores: getStoresByProductSizeIds(productId, hashKey)
     }
   });
 }
@@ -120,4 +150,48 @@ calcHash();
 testDeNorm();
 
 // output
-// [{"productId":1,"productName":"The First Beer","sizes":[{"sizeName":"like a little buzzed"},{"sizeName":"like dont drive"}]},{"productId":2,"productName":"Scotchy Scotch Scotch","sizes":[{"sizeName":"decanter"}]}]
+// [
+//   {
+//     "productId": 1,
+//     "productName": "The First Beer",
+//     "sizes": [
+//       {
+//         "sizeName": "like a little buzzed",
+//         "stores": [
+//           {
+//             "storeId": 1,
+//             "storePrice": 0.99
+//           },
+//           {
+//             "storeId": 2,
+//             "storePrice": 1.39
+//           }
+//         ]
+//       },
+//       {
+//         "sizeName": "like dont drive",
+//         "stores": [
+//           {
+//             "storeId": 1,
+//             "storePrice": 3.99
+//           }
+//         ]
+//       }
+//     ]
+//   },
+//   {
+//     "productId": 2,
+//     "productName": "Scotchy Scotch Scotch",
+//     "sizes": [
+//       {
+//         "sizeName": "decanter",
+//         "stores": [
+//           {
+//             "storeId": 2,
+//             "storePrice": 59.99
+//           }
+//         ]
+//       }
+//     ]
+//   }
+// ]
