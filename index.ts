@@ -75,8 +75,12 @@ const calcHash = () => {
   })
 }
 
-const getProductById = (key: number) => {
-  return productHash[key];
+const getSizesByProductId = (productId: number) => {
+  return [];
+}
+
+const getProductById = (productId: number) => {
+  return productHash[productId];
 }
 const getProducts = () => {
   return Object.keys(productHash).map((hashKey) => {
@@ -84,7 +88,8 @@ const getProducts = () => {
     const intKey = parseInt(hashKey);
     return {
       productId: intKey,
-      productName: getProductById(intKey).productName
+      productName: getProductById(intKey).productName,
+      sizes: getSizesByProductId(intKey),
     }
   });
 }
@@ -96,5 +101,5 @@ calcHash();
 testDeNorm();
 
 // output
-// [ { productId: 1, productName: 'The First Beer' },
-//   { productId: 2, productName: 'Scotchy Scotch Scotch' } ]
+// [ { productId: 1, productName: 'The First Beer', sizes: [] },
+//   { productId: 2, productName: 'Scotchy Scotch Scotch', sizes: [] } ]
