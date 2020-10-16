@@ -59,11 +59,14 @@ const jsonString = `[{
 const json = JSON.parse(jsonString);
 
 // promote to hash outside of function
-const productHash: { [key: string]: boolean } = {};
+const productHash: { [key: number]: any } = {};
 
-const checkAndAddProductToHash = ({ productId }: any) => {
+const checkAndAddProductToHash = ({ productId, productName }: any) => {
   if (!productHash[productId]) {
-      productHash[productId] = true;
+      productHash[productId] = {
+        productId,
+        productName,
+      };
   }
 }
 const calcHash = () => {
@@ -71,10 +74,19 @@ const calcHash = () => {
     checkAndAddProductToHash(flat);
   })
 }
+
+const getProductById = (key: number) => {
+  return productHash[key];
+}
 const getProducts = () => {
-  return Object.keys(productHash).map((hashKey) => ({
-    productId: hashKey,
-  }));
+  return Object.keys(productHash).map((hashKey) => {
+    // json number but object.keys is always string
+    const intKey = parseInt(hashKey);
+    return {
+      productId: intKey,
+      productName: getProductById(intKey).productName
+    }
+  });
 }
 
 const testDeNorm = () => {
@@ -84,4 +96,5 @@ calcHash();
 testDeNorm();
 
 // output
-// [ { productId: '1' }, { productId: '2' } ]
+// [ { productId: 1, productName: 'The First Beer' },
+//   { productId: 2, productName: 'Scotchy Scotch Scotch' } ]
